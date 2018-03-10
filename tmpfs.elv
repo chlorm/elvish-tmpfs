@@ -96,6 +96,7 @@ fn get-user-tmpfs {
         }
         E:XDG_RUNTIME_DIR = $dir
         put $dir
+        break
       }
     } except {
       fail 'Could not find a writeable tmpfs'
