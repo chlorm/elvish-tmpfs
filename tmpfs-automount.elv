@@ -9,7 +9,7 @@ fn main {
     # FIXME: We use an environment variable because un declared variable
     #        errors fall through try/except.
     mount-cache = (get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS)
-  } except {
+  } except _ {
     mount-cache = $false
   }
   if (eq $mount-cache $true) {

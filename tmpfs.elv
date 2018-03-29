@@ -30,7 +30,7 @@ fn test-write-permission [dir]{
     }
     touch $file
     rm $file
-  } except {
+  } except _ {
     fail $dir' is not writeable'
   }
 }
@@ -55,12 +55,12 @@ fn get-user-tmpfs {
     }
 
     put $xdg-runtime-dir
-  } except {  # Fallback to searching for a writable tmpfs.
+  } except _ {  # Fallback to searching for a writable tmpfs.
     try {
       local:uid = ''
       try {
         uid = (id -u)
-      } except {
+      } except _ {
         uid = $E:UID
       }
       if (==s $uid '') {
@@ -78,7 +78,7 @@ fn get-user-tmpfs {
         local:tmpfs-exist = ''
         try {
           tmpfs-exist = (df | grep '^\(tmpfs\|ramfs\).*'$dir)
-        } except {
+        } except _ {
           tmpfs-exist = ''
         }
         if (==s $tmpfs-exist '') {
