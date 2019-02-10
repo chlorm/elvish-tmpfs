@@ -17,12 +17,20 @@ use github.com/chlorm/elvish-xdg/xdg
 # FIXME: implement a module for checking and setting directory permissions.
 #        Maybe implement multiple methods via ls, getfacl & stat.
 
-fn create-user-tmpfs-dir [tmpdir]{
-  mkdir -p $tmpdir
-  chmod '0700' $tmpdir
+fn -create-user-tmpfs-dir [dir]{
+  try {
+    mkdir -p $dir
+  } except _ {
+    fail 'Failed to create dir: '$dir
+  }
+  try {
+    chmod '0700' $dir
+  } except _ {
+    fail 'Failed to change mode of directory: '$dir
+  }
 }
 
-fn test-write-permission [dir]{
+fn -test-write-permission [dir]{
   try {
     local:file = $dir'/test-write-file'
     if ?(test -f $file) {
@@ -33,6 +41,14 @@ fn test-write-permission [dir]{
   } except _ {
     fail $dir' is not writeable'
   }
+}
+
+fn -dir-exists-and-writeable [dir]{
+  # TODO: fix permissions
+  if (not ?(test -d $dir)) {
+    -create-user-tmpfs-dir $dir
+  }
+  -test-write-permission $dir
 }
 
 # Returns a writable tmpfs directory.
@@ -47,12 +63,7 @@ fn get-user-tmpfs {
       fail
     }
 
-    if (test -d $xdg-runtime-dir) {
-      # TODO: fix permissions
-      test-write-permission $xdg-runtime-dir
-    } else {
-      create-user-tmpfs-dir $xdg-runtime-dir
-    }
+    -dir-exists-and-writeable $xdg-runtime-dir
 
     put $xdg-runtime-dir
   } except _ {  # Fallback to searching for a writable tmpfs.
@@ -88,12 +99,7 @@ fn get-user-tmpfs {
         if (not (has-suffix $dir $uid)) {
           dir = $dir'/'$uid
         }
-        if ?(test -d $dir) {
-          # TODO: fix permissions
-          test-write-permission $dir
-        } else {
-          create-user-tmpfs-dir $dir
-        }
+        -dir-exists-and-writeable $dir
         E:XDG_RUNTIME_DIR = $dir
         put $dir
         break
