@@ -56,8 +56,8 @@ fn -dir-exists-and-writeable [dir]{
 #       a writability test.
 fn get-user-tmpfs {
   try {  # Use XDG_RUNTIME_DIR if it is set.
-    local:xdg-runtime-dir = (xdg:get-xdg-dir XDG_RUNTIME_DIR)
-    local:xdg-cache-home = (xdg:get-xdg-dir XDG_CACHE_HOME)
+    local:xdg-runtime-dir = (xdg:get-dir XDG_RUNTIME_DIR)
+    local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
     # XDG_CACHE_HOME is the fallback and means we are likely not using tmpfs.
     if (or (==s $xdg-runtime-dir $xdg-cache-home) (==s $xdg-runtime-dir '')) {
       fail
@@ -111,7 +111,7 @@ fn get-user-tmpfs {
 }
 
 fn mount-xdg-cache-on-tmpfs [tmpfs]{
-  local:xdg-cache-home = (xdg:get-xdg-dir XDG_CACHE_HOME)
+  local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
   if (!=s $tmpfs $xdg-cache-home) {
     ln -s $tmpfs $xdg-cache-home
   }
