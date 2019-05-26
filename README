@@ -1,7 +1,7 @@
 Elvish User TMPFS
 =================
 
-###### A module for finding a writiable tmpfs and setting up XDG_RUNTIME_DIR.
+###### A module for finding a writable tmpfs and setting up XDG_RUNTIME_DIR.
 
 ```elvish
 epm:install github.com/chlorm/elvish-user-tmpfs
