@@ -1,5 +1,5 @@
 {
   "dependencies": [
-    "github.com/chlorm/elvish-xdg"
+    "github.com/chlorm/elvish-stl"
   ]
 }

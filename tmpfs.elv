@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Cody Opel <codyopel@gmail.com>
+# Copyright (c) 2018, 2020, Cody Opel <cwopel@chlorm.net>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,108 +13,66 @@
 # limitations under the License.
 
 
-use github.com/chlorm/elvish-xdg/xdg
+use re
+use github.com/chlorm/elvish-stl/os
+use github.com/chlorm/elvish-stl/path
+use github.com/chlorm/elvish-stl/utils
 
 
-# FIXME: implement a module for checking and setting directory permissions.
-#        Maybe implement multiple methods via ls, getfacl & stat.
+# Set globally to only run once
+local:df-output = [ (e:df) ]
 
-fn -create-user-tmpfs-dir [dir]{
-  try {
-    mkdir -p $dir
-  } except _ {
-    fail 'Failed to create dir: '$dir
-  }
-  try {
-    chmod '0700' $dir
-  } except _ {
-    fail 'Failed to change mode of directory: '$dir
-  }
-}
 
-fn -test-write-permission [dir]{
-  try {
-    local:file = $dir'/test-write-file'
-    if ?(test -f $file) {
-      rm $file
+fn -is-tmp-dir [dir]{
+  for local:line $df-output {
+    if (re:match '^?(tmpfs|ramfs).*'$dir $line) {
+      return
     }
-    touch $file
-    rm $file
-  } except _ {
-    fail $dir' is not writeable'
   }
+  fail 'tmpfs/ramfs dir does not exist: '$dir
 }
 
 fn -dir-exists-and-writeable [dir]{
-  # TODO: fix permissions
-  if (not ?(test -d $dir)) {
-    -create-user-tmpfs-dir $dir
+  if (not (os:is-dir $dir)) {
+    os:makedirs $dir
   }
-  -test-write-permission $dir
+  os:chmod '0700' $dir
+  utils:test-writeable $dir
 }
 
 # Returns a writable tmpfs directory.
-# TODO: Separate creation of tmpfs directories, we currently create them as
-#       a writability test.
 fn get-user-tmpfs {
-  try {  # Use XDG_RUNTIME_DIR if it is set.
-    local:xdg-runtime-dir = (xdg:get-dir XDG_RUNTIME_DIR)
-    local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
-    # XDG_CACHE_HOME is the fallback and means we are likely not using tmpfs.
-    if (or (==s $xdg-runtime-dir $xdg-cache-home) (==s $xdg-runtime-dir '')) {
-      fail
+  try {
+    local:uid = (get-env UID)
+    try {
+      uid = (id -u)
+    } except _ {
+      # Ignore
+    }
+    if (==s '' $uid) {
+      fail 'Could not determine UID'
     }
 
-    -dir-exists-and-writeable $xdg-runtime-dir
-
-    put $xdg-runtime-dir
-  } except _ {  # Fallback to searching for a writable tmpfs.
-    try {
-      local:uid = ''
-      try {
-        uid = (id -u)
-      } except _ {
-        uid = $E:UID
-      }
-      if (==s $uid '') {
-        fail 'Could not determine UID'
-      }
-
-      local:possible-dirs = [
-        $E:ROOT'/dev/user/'$uid
-        $E:ROOT'/dev/shm'
-        $E:ROOT'/run/shm'
-        $E:ROOT'/tmp'
-        $E:ROOT'/var/tmp'
-      ]
-      for local:dir $possible-dirs {
-        local:tmpfs-exist = ''
-        try {
-          tmpfs-exist = (df | grep '^\(tmpfs\|ramfs\).*'$dir)
-        } except _ {
-          tmpfs-exist = ''
-        }
-        if (==s $tmpfs-exist '') {
-          continue
-        }
-
-        if (not (has-suffix $dir $uid)) {
-          dir = $dir'/'$uid
+    local:possible-dirs = [
+      $E:ROOT'/dev/user/'$uid
+      $E:ROOT'/dev/shm'
+      $E:ROOT'/run/shm'
+      $E:ROOT'/tmp'
+      $E:ROOT'/var/tmp'
+    ]
+    for local:dir $possible-dirs {
+      if ?(-is-tmp-dir $dir) {
+        if (!=s $uid (path:basename $dir)) {
+          dir = (path:join $dir $uid)
         }
         -dir-exists-and-writeable $dir
-        E:XDG_RUNTIME_DIR = $dir
+        set-env XDG_RUNTIME_DIR $dir
         put $dir
         break
       }
-    } except {
-      fail 'Could not find a writeable tmpfs'
     }
+  } except {
+    fail 'Could not find a writeable tmpfs'
   }
 }
 
-fn mount-xdg-cache-on-tmpfs [tmpfs]{
-  local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
-  if (!=s $tmpfs $xdg-cache-home) {
-    ln -s $tmpfs $xdg-cache-home
-  }
-}

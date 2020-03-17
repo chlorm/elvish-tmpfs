@@ -1,22 +1,28 @@
 
+
+use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-user-tmpfs/tmpfs
+use github.com/chlorm/elvish-xdg/xdg
+
 
 fn main {
-  local:tmpdir = (tmpfs:get-user-tmpfs)
+  # Make sure XDG_RUNTIME_DIR is configured.
+  local:capture = (xdg:get-dir XDG_RUNTIME_DIR)
 
   local:mount-cache = $false
   try {
-    # FIXME: We use an environment variable because un declared variable
-    #        errors fall through try/except.
     mount-cache = (get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS)
   } except _ {
-    mount-cache = $false
+    # Ignore
   }
-  if (eq $mount-cache $true) {
-    mount-xdg-cache-on-tmpfs $tmpdir
+  if (eq $true $mount-cache) {
+    local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
+    local:tmp = (tmpfs:get-user-tmpfs)
+    if (!=s $tmp $xdg-cache-home) {
+      # FIXME: test for directory first
+      os:symlink $tmp $xdg-cache-home
+    }
   }
-
-  #mount-xdg-cache-on-tmpfs $tmpdir
 }
 
 main
