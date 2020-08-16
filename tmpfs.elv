@@ -45,7 +45,7 @@ fn get-user-tmpfs {
   try {
     local:uid = (get-env UID)
     try {
-      uid = (id -u)
+      uid = (os:uid)
     } except _ {
       # Ignore
     }
