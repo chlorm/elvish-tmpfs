@@ -30,7 +30,7 @@ fn main {
   }
   if (eq $true $mount-cache) {
     local:xdg-cache-home = (xdg:get-dir XDG_CACHE_HOME)
-    local:tmp = (tmpfs:get-user-tmpfs)
+    local:tmp = (tmpfs:get-user-tmpfs &by-size=$true)
     if (!=s $tmp $xdg-cache-home) {
       # FIXME: test for directory first
       os:symlink $tmp $xdg-cache-home
