@@ -24,7 +24,7 @@ fn main {
 
   local:mount-cache = $false
   try {
-    mount-cache = (get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS)
+    mount-cache = (bool ?(get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS >/dev/null))
   } except _ {
     # Ignore
   }
