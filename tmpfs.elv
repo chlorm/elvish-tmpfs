@@ -16,63 +16,78 @@
 use re
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-stl/path
+use github.com/chlorm/elvish-stl/regex
 use github.com/chlorm/elvish-stl/utils
 
 
-# Set globally to only run once
-local:df-output = [ (e:df) ]
-
-
-fn -is-tmp-dir [dir]{
-  for local:line $df-output {
-    if (re:match '^?(tmpfs|ramfs).*'$dir $line) {
-      return
-    }
+fn -try [path]{
+  if (not (os:is-dir $path)) {
+    os:makedirs $path 2>&-
   }
-  fail 'tmpfs/ramfs dir does not exist: '$dir
-}
-
-fn -dir-exists-and-writeable [dir]{
-  if (not (os:is-dir $dir)) {
-    os:makedirs $dir
+  os:chmod 0700 $path
+  local:s = (os:statfs $path)
+  local:type = $s[type]
+  if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
+    fail
   }
-  os:chmod '0700' $dir
-  utils:test-writeable $dir
+  utils:test-writeable $path
+
+  # HACK: This returns the stat output to avoid calling stat multiple times.
+  put $s
 }
 
 # Returns a writable tmpfs directory.
-fn get-user-tmpfs {
+fn get-user-tmpfs [&by-size=$false]{
   try {
-    local:uid = (get-env UID)
+    local:uid = $nil
     try {
       uid = (os:uid)
     } except _ {
       # Ignore
     }
-    if (==s '' $uid) {
+    if (eq $uid $nil) {
       fail 'Could not determine UID'
     }
 
     local:possible-dirs = [
-      $E:ROOT'/dev/user/'$uid
-      $E:ROOT'/dev/shm'
-      $E:ROOT'/run/shm'
-      $E:ROOT'/tmp'
-      $E:ROOT'/var/tmp'
+      $E:ROOT'/run/user/'$uid
+      $E:ROOT'/dev/shm/'$uid
+      $E:ROOT'/run/shm/'$uid
+      $E:ROOT'/tmp/'$uid
+      $E:ROOT'/var/tmp/'$uid
     ]
+    local:possible-dirs-stats = [&]
     for local:dir $possible-dirs {
-      if ?(-is-tmp-dir $dir) {
-        if (!=s $uid (path:basename $dir)) {
-          dir = (path:join $dir $uid)
-        }
-        -dir-exists-and-writeable $dir
-        set-env XDG_RUNTIME_DIR $dir
-        put $dir
-        break
+      try {
+        possible-dirs-stats[$dir]=(-try $dir)
+      } except _ {
+        continue
       }
+    }
+    # Prefer first (or first largest) dir
+    local:largest = 0
+    local:largest-dir = ''
+    local:first = ''
+    for local:dir $possible-dirs {
+      local:blocks = 0
+      try {
+        blocks = $possible-dirs-stats[$dir][blocks]
+      } except _ { }
+      if (==s $first '') {
+        first=$dir
+      }
+      if (> $blocks $largest) {
+        largest = $blocks
+        largest-dir = $dir
+      }
+    }
+    if $by-size {
+      put $largest-dir
+    } else {
+      put $first
     }
   } except {
     fail 'Could not find a writeable tmpfs'
   }
 }
-
+get-user-tmpfs
