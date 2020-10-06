@@ -20,7 +20,10 @@ use github.com/chlorm/elvish-xdg/xdg
 
 fn main {
     # Make sure XDG_RUNTIME_DIR is configured.
-    local:capture = (xdg:get-dir XDG_RUNTIME_DIR)
+    local:run = (xdg:get-dir XDG_RUNTIME_DIR)
+    if (not (==s (get-env XDG_RUNTIME_DIR) $run)) {
+        set-env XDG_RUNTIME_DIR $run
+    }
 
     local:mount-cache = $false
     try {
