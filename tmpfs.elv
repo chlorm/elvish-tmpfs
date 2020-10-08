@@ -13,19 +13,47 @@
 # limitations under the License.
 
 
+use platform
 use github.com/chlorm/elvish-stl/os
+use github.com/chlorm/elvish-stl/path
 use github.com/chlorm/elvish-stl/utils
 
+
+# Since Windows has no tmpfs and doesn't clear TEMP, we need to install
+# a batch script to clear it at startup.
+fn -install-windows-bat {
+    use epm
+    local:url = 'github.com/chlorm/elvish-user-tmpfs'
+    local:lib-dir = (path-clean (epm:metadata $url)['dst'])
+
+    local:startup-dir = (path:home)'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
+    if (not (os:is-dir $startup-dir)) {
+        os:makedirs $startup-dir
+    }
+
+    local:bat = '\clear-temp.bat'
+    if (not (os:exists $startup-dir$bat)) {
+        cp -v $lib-dir$bat $startup-dir
+    }
+}
 
 fn -try [path]{
     if (not (os:is-dir $path)) {
         os:makedirs $path 2>&-
     }
-    os:chmod 0700 $path
-    local:s = (os:statfs $path)
-    local:type = $s[type]
-    if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
-        fail
+
+    local:s = [&]
+    if $platform:is-windows {
+        # Require the batch file before returning as a valid tmp dir.
+        -install-windows-bat
+        s[blocks] = 1
+    } else {
+        os:chmod 0700 $path
+        s = (os:statfs $path)
+        local:type = $s[type]
+        if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
+            fail
+        }
     }
     utils:test-writeable $path
 
@@ -44,13 +72,20 @@ fn get-user-tmpfs [&by-size=$false]{
             fail 'Could not determine UID'
         }
 
-        local:possible-dirs = [
-            $E:ROOT'/run/user/'$uid
-            $E:ROOT'/dev/shm/'$uid
-            $E:ROOT'/run/shm/'$uid
-            $E:ROOT'/tmp/'$uid
-            $E:ROOT'/var/tmp/'$uid
-        ]
+        local:possible-dirs = [ ]
+        if $platform:is-windows {
+            possible-dirs = [
+                (get-env TEMP)
+            ]
+        } else {
+            possible-dirs = [
+                $E:ROOT'/run/user/'$uid
+                $E:ROOT'/dev/shm/'$uid
+                $E:ROOT'/run/shm/'$uid
+                $E:ROOT'/tmp/'$uid
+                $E:ROOT'/var/tmp/'$uid
+            ]
+        }
         local:possible-dirs-stats = [&]
         for local:dir $possible-dirs {
             try {
