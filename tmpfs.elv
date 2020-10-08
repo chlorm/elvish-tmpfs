@@ -61,21 +61,26 @@ fn get-user-tmpfs [&by-size=$false]{
         }
         # Prefer first (or first largest) dir
         local:largest = 0
-        local:largest-dir = ''
-        local:first = ''
+        local:largest-dir = $nil
+        local:first = $nil
         for local:dir $possible-dirs {
             local:blocks = 0
             try {
                 blocks = $possible-dirs-stats[$dir][blocks]
             } except _ { }
-            if (==s $first '') {
-                first=$dir
+            if (eq $first $nil) {
+                first = $dir
             }
             if (> $blocks $largest) {
                 largest = $blocks
                 largest-dir = $dir
             }
         }
+
+        if (or (eq $first $nil) (eq $largest-dir $nil)) {
+            fail
+        }
+
         if $by-size {
             put $largest-dir
         } else {
