@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+use platform
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-user-tmpfs/tmpfs
 use github.com/chlorm/elvish-xdg/xdg
@@ -32,6 +33,9 @@ fn main {
         # Ignore
     }
     if (eq $mountCache $true) {
+        if $platform:is-windows {
+            return
+        }
         xdgCacheHome = (xdg:get-dir XDG_CACHE_HOME)
         tmpfs = (tmpfs:get-user-tmpfs &by-size=$true)
         if (!=s $tmpfs $xdgCacheHome) {
