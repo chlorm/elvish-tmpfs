@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-use path
+use path path_
 use platform
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-stl/path
@@ -25,7 +25,7 @@ use github.com/chlorm/elvish-stl/utils
 fn -install-windows-bat {
     use epm
     url = 'github.com/chlorm/elvish-user-tmpfs'
-    libDir = (path:clean (epm:metadata $url)['dst'])
+    libDir = (path_:clean (epm:metadata $url)['dst'])
 
     startupDir = (path:home)'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
     if (not (os:is-dir $startupDir)) {
