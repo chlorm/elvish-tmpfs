@@ -21,14 +21,14 @@ use github.com/chlorm/elvish-xdg/xdg
 
 fn main {
     # Make sure XDG_RUNTIME_DIR is configured.
-    run = (xdg:get-dir XDG_RUNTIME_DIR)
+    var run = (xdg:get-dir XDG_RUNTIME_DIR)
     if (not (==s (get-env XDG_RUNTIME_DIR) $run)) {
         set-env XDG_RUNTIME_DIR $run
     }
 
-    mountCache = $false
+    var mountCache = $false
     try {
-        mountCache = (bool ?(get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS >$os:NULL))
+        set mountCache = (bool ?(get-env MOUNT_XDG_CACHE_HOME_TO_TMPFS >$os:NULL))
     } except _ {
         # Ignore
     }
@@ -36,8 +36,8 @@ fn main {
         if $platform:is-windows {
             return
         }
-        xdgCacheHome = (xdg:get-dir XDG_CACHE_HOME)
-        tmpfs = (tmpfs:get-user-tmpfs &by-size=$true)
+        var xdgCacheHome = (xdg:get-dir XDG_CACHE_HOME)
+        var tmpfs = (tmpfs:get-user-tmpfs &by-size=$true)
         if (!=s $tmpfs $xdgCacheHome) {
             # FIXME: test for directory first
             os:symlink $tmpfs $xdgCacheHome

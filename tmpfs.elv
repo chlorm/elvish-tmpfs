@@ -24,15 +24,15 @@ use github.com/chlorm/elvish-stl/utils
 # a batch script to clear it at startup.
 fn -install-windows-bat {
     use epm
-    url = 'github.com/chlorm/elvish-user-tmpfs'
-    libDir = (path_:clean (epm:metadata $url)['dst'])
+    var url = 'github.com/chlorm/elvish-user-tmpfs'
+    var libDir = (path_:clean (epm:metadata $url)['dst'])
 
-    startupDir = (path:home)'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
+    var startupDir = (path:home)'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
     if (not (os:is-dir $startupDir)) {
         os:makedirs $startupDir
     }
 
-    bat = '\clear-temp.bat'
+    var bat = '\clear-temp.bat'
     if (not (os:exists $startupDir$bat)) {
         os:copy $libDir$bat $startupDir
     }
@@ -43,15 +43,15 @@ fn -try [path]{
         os:makedirs $path 2>&-
     }
 
-    stat = [&]
+    var stat = [&]
     if $platform:is-windows {
         # Require the batch file before returning as a valid tmp dir.
         -install-windows-bat
-        stat[blocks] = 1
+        set stat[blocks] = 1
     } else {
         os:chmod 0700 $path
-        stat = (os:statfs $path)
-        type = $stat[type]
+        set stat = (os:statfs $path)
+        var type = $stat[type]
         if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
             fail
         }
@@ -65,21 +65,21 @@ fn -try [path]{
 # Returns a writable tmpfs directory.
 fn get-user-tmpfs [&by-size=$false]{
     try {
-        uid = $nil
+        var uid = $nil
         try {
-            uid = (os:uid)
+            set uid = (os:uid)
         } except _ { }
         if (eq $uid $nil) {
             fail 'Could not determine UID'
         }
 
-        possibleDirs = [ ]
+        var possibleDirs = [ ]
         if $platform:is-windows {
-            possibleDirs = [
+            set possibleDirs = [
                 (get-env TEMP)
             ]
         } else {
-            possibleDirs = [
+            set possibleDirs = [
                 $E:ROOT'/run/user/'$uid
                 $E:ROOT'/dev/shm/'$uid
                 $E:ROOT'/run/shm/'$uid
@@ -87,29 +87,29 @@ fn get-user-tmpfs [&by-size=$false]{
                 $E:ROOT'/var/tmp/'$uid
             ]
         }
-        possibleDirsStats = [&]
+        var possibleDirsStats = [&]
         for dir $possibleDirs {
             try {
-                possibleDirsStats[$dir] = (-try $dir)
+                set possibleDirsStats[$dir] = (-try $dir)
             } except _ {
                 continue
             }
         }
         # Prefer first (or first largest) dir
-        largest = 0
-        largest-dir = $nil
-        first = $nil
+        var largest = 0
+        var largest-dir = $nil
+        var first = $nil
         for dir $possibleDirs {
-            blocks = 0
+            var blocks = 0
             try {
-                blocks = $possibleDirsStats[$dir][blocks]
+                set blocks = $possibleDirsStats[$dir][blocks]
             } except _ { }
             if (eq $first $nil) {
-                first = $dir
+                set first = $dir
             }
             if (> $blocks $largest) {
-                largest = $blocks
-                largest-dir = $dir
+                set largest = $blocks
+                set largest-dir = $dir
             }
         }
 
