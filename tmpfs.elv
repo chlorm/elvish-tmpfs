@@ -47,11 +47,11 @@ fn -try [path]{
     if $platform:is-windows {
         # Require the batch file before returning as a valid tmp dir.
         -install-windows-bat
-        set stat[blocks] = 1
+        set stat['blocks'] = 1
     } else {
         os:chmod 0700 $path
         set stat = (os:statfs $path)
-        var type = $stat[type]
+        var type = $stat['type']
         if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
             fail
         }
@@ -76,7 +76,7 @@ fn get-user-tmpfs [&by-size=$false]{
         var possibleDirs = [ ]
         if $platform:is-windows {
             set possibleDirs = [
-                (get-env TEMP)
+                (get-env 'TEMP')
             ]
         } else {
             set possibleDirs = [
@@ -102,7 +102,7 @@ fn get-user-tmpfs [&by-size=$false]{
         for dir $possibleDirs {
             var blocks = 0
             try {
-                set blocks = $possibleDirsStats[$dir][blocks]
+                set blocks = $possibleDirsStats[$dir]['blocks']
             } except _ { }
             if (eq $first $nil) {
                 set first = $dir
