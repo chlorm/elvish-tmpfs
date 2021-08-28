@@ -1,4 +1,4 @@
-# elvish-user-tmpfs
+# elvish-tmpfs
 
 ###### An [Elvish](https://elv.sh) module for finding a writable tmpfs.
 
