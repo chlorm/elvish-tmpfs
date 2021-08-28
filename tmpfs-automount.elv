@@ -16,14 +16,14 @@
 use platform
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-user-tmpfs/tmpfs
-use github.com/chlorm/elvish-xdg/xdg
+use github.com/chlorm/elvish-xdg/xdg-dirs
 
 
 fn main {
     # Make sure XDG_RUNTIME_DIR is configured.
-    var run = (xdg:get-dir 'XDG_RUNTIME_DIR')
-    if (not (==s (get-env 'XDG_RUNTIME_DIR') $run)) {
-        set-env 'XDG_RUNTIME_DIR' $run
+    var run = (xdg-dirs:runtime-dir)
+    if (not (==s (get-env $xdg-dirs:XDG-RUNTIME-DIR) $run)) {
+        set-env $xdg-dirs:XDG-RUNTIME-DIR $run
     }
 
     var mountCache = $false
@@ -36,7 +36,7 @@ fn main {
         if $platform:is-windows {
             return
         }
-        var xdgCacheHome = (xdg:get-dir 'XDG_CACHE_HOME')
+        var xdgCacheHome = (xdg-dirs:cache-home)
         var tmpfs = (tmpfs:get-user-tmpfs &by-size=$true)
         if (!=s $tmpfs $xdgCacheHome) {
             # FIXME: test for directory first
