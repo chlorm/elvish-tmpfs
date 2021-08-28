@@ -63,7 +63,7 @@ fn -try [path]{
 }
 
 # Returns a writable tmpfs directory.
-fn get-user-tmpfs [&by-size=$false]{
+fn get-user [&by-size=$false]{
     try {
         var uid = $nil
         try {
