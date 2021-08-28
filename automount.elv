@@ -37,7 +37,7 @@ fn main {
             return
         }
         var xdgCacheHome = (xdg-dirs:cache-home)
-        var tmpfs = (tmpfs:get-user-tmpfs &by-size=$true)
+        var tmpfs = (tmpfs:get-user &by-size=$true)
         if (!=s $tmpfs $xdgCacheHome) {
             # FIXME: test for directory first
             os:symlink $tmpfs $xdgCacheHome
