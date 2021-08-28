@@ -24,7 +24,7 @@ use github.com/chlorm/elvish-stl/utils
 # a batch script to clear it at startup.
 fn -install-windows-bat {
     use epm
-    var url = 'github.com/chlorm/elvish-user-tmpfs'
+    var url = 'github.com/chlorm/elvish-tmpfs'
     var libDir = (path_:clean (epm:metadata $url)['dst'])
 
     var startupDir = (path:home)'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
