@@ -15,7 +15,7 @@
 
 use platform
 use github.com/chlorm/elvish-stl/os
-use github.com/chlorm/elvish-user-tmpfs/tmpfs
+use github.com/chlorm/elvish-tmpfs/tmpfs
 use github.com/chlorm/elvish-xdg/xdg-dirs
 
 
