@@ -64,20 +64,13 @@ fn -try [path]{
 # Returns a writable tmpfs directory.
 fn get-user [&by-size=$false]{
     try {
-        var uid = $nil
-        try {
-            set uid = (os:uid)
-        } except _ { }
-        if (eq $uid $nil) {
-            fail 'Could not determine UID'
-        }
-
         var possibleDirs = [ ]
         if $platform:is-windows {
             set possibleDirs = [
                 (get-env 'TEMP')
             ]
         } else {
+            var uid = (os:uid)
             set possibleDirs = [
                 $E:ROOT'/run/user/'$uid
                 $E:ROOT'/dev/shm/'$uid
