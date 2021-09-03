@@ -22,7 +22,7 @@ use github.com/chlorm/elvish-xdg/xdg-dirs
 
 fn main {
     # Make sure XDG_RUNTIME_DIR is configured.
-    if (eq (get-value-or-nil $xdg-dirs:XDG-RUNTIME-DIR) $nil) {
+    if (eq (env:get-value-or-nil $xdg-dirs:XDG-RUNTIME-DIR) $nil) {
         var run = (xdg-dirs:runtime-dir)
         set-env $xdg-dirs:XDG-RUNTIME-DIR $run
     }
