@@ -28,7 +28,7 @@ fn main {
 
     var mountCache = $false
     try {
-        set mountCache = (bool ?(get-env 'MOUNT_XDG_CACHE_HOME_TO_TMPFS' >$os:NULL))
+        set mountCache = (bool ?(var _ = (get-env 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')))
     } except _ {
         # Ignore
     }
