@@ -51,7 +51,7 @@ fn -try [path]{
         os:chmod 0700 $path
         set stat = (os:statfs $path)
         var type = $stat['type']
-        if (not (or (==s $type 'tmpfs') (==s $type 'ramfs'))) {
+        if (not (has-value [ 'tmpfs' 'ramfs' ] $type)) {
             fail
         }
     }
