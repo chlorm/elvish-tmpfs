@@ -114,7 +114,7 @@ fn get-user [&by-size=$false]{
         } else {
             put $first
         }
-    } except {
+    } except _ {
         fail 'Could not find a writeable tmpfs'
     }
 }
