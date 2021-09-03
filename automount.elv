@@ -27,15 +27,12 @@ fn main {
     }
 
     var mountCache = $false
-    try {
-        set mountCache = (bool ?(var _ = (get-env 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')))
-    } except _ {
-        # Ignore
+    if $platform:is-windows {
+        try {
+            set mountCache = (bool ?(var _ = (get-env 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')))
+        } except _ { }
     }
-    if (eq $mountCache $true) {
-        if $platform:is-windows {
-            return
-        }
+    if $mountCache {
         var xdgCacheHome = (xdg-dirs:cache-home)
         var tmpfs = (tmpfs:get-user &by-size=$true)
         if (!=s $tmpfs $xdgCacheHome) {
