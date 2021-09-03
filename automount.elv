@@ -14,6 +14,7 @@
 
 
 use platform
+use github.com/chlorm/elvish-stl/env
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-tmpfs/tmpfs
 use github.com/chlorm/elvish-xdg/xdg-dirs
@@ -29,7 +30,7 @@ fn main {
     var mountCache = $false
     if $platform:is-windows {
         try {
-            set mountCache = (bool ?(var _ = (get-env 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')))
+            set mountCache = (env:exists 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')
         } except _ { }
     }
     if $mountCache {
