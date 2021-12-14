@@ -37,7 +37,7 @@ fn -install-windows-bat {
     }
 }
 
-fn -try [path]{
+fn -try {|path|
     if (not (os:is-dir $path)) {
         os:makedirs $path 2>&-
     }
@@ -62,7 +62,7 @@ fn -try [path]{
 }
 
 # Returns a writable tmpfs directory.
-fn get-user [&by-size=$false]{
+fn get-user {|&by-size=$false|
     try {
         var possibleDirs = [ ]
         if $platform:is-windows {
