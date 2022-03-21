@@ -31,7 +31,7 @@ fn main {
     if $platform:is-windows {
         try {
             set mountCache = (env:exists 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')
-        } except _ { }
+        } catch _ { }
     }
     if $mountCache {
         var xdgCacheHome = (xdg-dirs:cache-home)

@@ -83,7 +83,7 @@ fn get-user {|&by-size=$false|
         for dir $possibleDirs {
             try {
                 set possibleDirsStats[$dir] = (-try $dir)
-            } except _ {
+            } catch _ {
                 continue
             }
         }
@@ -95,7 +95,7 @@ fn get-user {|&by-size=$false|
             var blocks = 0
             try {
                 set blocks = $possibleDirsStats[$dir]['blocks']
-            } except _ { }
+            } catch _ { }
             if (eq $first $nil) {
                 set first = $dir
             }
@@ -114,7 +114,7 @@ fn get-user {|&by-size=$false|
         } else {
             put $first
         }
-    } except _ {
+    } catch _ {
         fail 'Could not find a writeable tmpfs'
     }
 }
