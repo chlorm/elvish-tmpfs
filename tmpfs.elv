@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-use platform
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-stl/path
+use github.com/chlorm/elvish-stl/platform
 use github.com/chlorm/elvish-stl/utils
 
 
