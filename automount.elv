@@ -24,13 +24,13 @@ fn main {
     # Make sure XDG_RUNTIME_DIR is configured.
     if (eq (env:get-value-or-nil $xdg-dirs:XDG-RUNTIME-DIR) $nil) {
         var run = (xdg-dirs:runtime-dir)
-        set-env $xdg-dirs:XDG-RUNTIME-DIR $run
+        env:set $xdg-dirs:XDG-RUNTIME-DIR $run
     }
 
     var mountCache = $false
     if $platform:is-windows {
         try {
-            set mountCache = (env:exists 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')
+            set mountCache = (env:has 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')
         } catch _ { }
     }
     if $mountCache {

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+use github.com/chlorm/elvish-stl/env
+use github.com/chlorm/elvish-stl/list
 use github.com/chlorm/elvish-stl/os
 use github.com/chlorm/elvish-stl/path
 use github.com/chlorm/elvish-stl/platform
@@ -51,7 +53,7 @@ fn -try {|path|
         os:chmod 0700 $path
         set stat = (os:statfs $path)
         var type = $stat['type']
-        if (not (has-value [ 'tmpfs' 'ramfs' ] $type)) {
+        if (not (list:has [ 'tmpfs' 'ramfs' ] $type)) {
             fail
         }
     }
@@ -67,7 +69,7 @@ fn get-user {|&by-size=$false|
         var possibleDirs = [ ]
         if $platform:is-windows {
             set possibleDirs = [
-                (get-env 'TEMP')
+                (env:get 'TEMP')
             ]
         } else {
             var uid = (os:uid)
