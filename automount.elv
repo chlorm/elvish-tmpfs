@@ -28,7 +28,7 @@ fn main {
     }
 
     var mountCache = $false
-    if $platform:is-windows {
+    if (not $platform:is-windows) {
         try {
             set mountCache = (env:has 'MOUNT_XDG_CACHE_HOME_TO_TMPFS')
         } catch _ { }
