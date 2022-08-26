@@ -112,30 +112,35 @@ fn -get-user-tmpfs-paths {
                 put $i['mount-point']
             }
         }
-    } elif $platform:is-windows {
-        -get-windows-tmpfs-paths
-    } elif $platform:is-darwin {
-        -get-macos-tmpfs-paths
-    } else {
-        put $E:ROOT'/tmp'
-        put $E:ROOT'/var/tmp'
+        return
     }
+    if $platform:is-windows {
+        -get-windows-tmpfs-paths
+        return
+    }
+    if $platform:is-darwin {
+        -get-macos-tmpfs-paths
+        return
+    }
+
+    put $E:ROOT'/tmp'
+    put $E:ROOT'/var/tmp'
 }
 
 fn -try {|path|
-    if (not (os:is-dir $path)) {
-        os:makedirs $path 2>$os:NULL
-    }
-
-    var stat = [&]
     if $platform:is-windows {
         # FIXME: Make this a console error with instructions on how to
         #        enable this behavior.
         # Require the batch file before returning as a valid tmp dir.
         -install-windows-bat
-    } else {
-        os:chmod 0700 $path
     }
+
+    if (not (os:is-dir $path)) {
+        os:makedirs $path 2>$os:NULL
+    }
+
+    os:chmod 0700 $path
+
     utils:test-writeable $path
 }
 
