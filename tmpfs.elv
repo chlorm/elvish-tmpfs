@@ -60,7 +60,7 @@ fn -parse-proc-mount {|mount|
 
 # Returns all tmpfs paths from /proc/mounts
 fn -get-linux-tmpfs-paths {
-    for p [ (io:cat '/proc/mounts') ] {
+    for p [ (str:to-lines (io:open '/proc/mounts')) ] {
         if (re:match '^(tmpfs|ramfs)' $p) {
             var n = (-parse-proc-mount $p)
             var m = $n['mount-point']
