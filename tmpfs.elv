@@ -139,7 +139,7 @@ fn -try {|path|
         os:makedirs $path 2>$os:NULL
     }
 
-    os:chmod 0700 $path
+    os:chmod 700 $path
 
     utils:test-writeable $path
 }
