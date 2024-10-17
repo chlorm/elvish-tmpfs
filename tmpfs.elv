@@ -151,15 +151,9 @@ fn -get-first-dir {|dirs &by-size=$false|
     var first = $nil
     for dir $dirs {
         var blocks = 0
-        # MacOS and Windows provide a specific tmp directory so
-        # we don't need to compare storage space.
-        if (or $platform:is-darwin $platform:is-windows) {
-            set blocks = 1
-        } else {
-            try {
-                set blocks = (os:statfs $dir)['blocks']
-            } catch e { echo $e >&2 }
-        }
+        try {
+            set blocks = (os:statfs $dir)['blocks']
+        } catch e { echo $e >&2 }
 
         if (eq $first $nil) {
             set first = $dir
@@ -192,6 +186,14 @@ fn get-user {|&by-size=$false|
             continue
         }
     }
+
+    # MacOS and Windows provide a specific tmp directory so
+    # we don't need to compare storage space.
+    if (or $platform:is-darwin $platform:is-windows) {
+        put $possibleDirs[0]
+        return
+    }
+
     try {
         -get-first-dir $possibleDirs &by-size=$by-size
     } catch e {
